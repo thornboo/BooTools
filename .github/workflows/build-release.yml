@@ -22,7 +22,7 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Build application
-        run: .uild.bat
+        run: build.bat
         shell: cmd
 
       - name: Determine Release Properties
