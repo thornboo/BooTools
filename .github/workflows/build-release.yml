@@ -29,19 +29,26 @@ jobs:
         id: release_props
         shell: pwsh
         run: |
+          $csproj_path = "${{ github.workspace }}\src\BooTools.UI\BooTools.UI.csproj"
+          $csproj_content = Get-Content $csproj_path -Raw
+          [xml]$csproj_xml = $csproj_content
+          $version = $csproj_xml.Project.PropertyGroup.Version
+
+          if (-not $version) {
+            echo "Error: Version tag not found in $csproj_path"
+            exit 1
+          }
+
           $is_prerelease = $false
-          $tag_prefix = "release"
-          $release_name_prefix = "Release"
+          $tag_name = "v$version"
+          $release_name = "Release v$version"
 
           if ("${{ github.ref }}" -eq "refs/heads/dev") {
             $is_prerelease = $true
-            $tag_prefix = "prerelease"
-            $release_name_prefix = "Pre-release"
+            $build_date = (Get-Date -Format 'yyyyMMdd-HHmmss')
+            $tag_name = "v$version-dev-$build_date"
+            $release_name = "Pre-release v$version (dev)"
           }
-          
-          $tag_date = (Get-Date -Format 'yyyyMMdd-HHmmss')
-          $tag_name = "$tag_prefix-$tag_date"
-          $release_name = "$release_name_prefix $tag_date"
 
           echo "is_prerelease=$is_prerelease" >> $env:GITHUB_OUTPUT
           echo "tag_name=$tag_name" >> $env:GITHUB_OUTPUT
