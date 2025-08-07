@@ -1,38 +1,80 @@
 @echo off
-echo Building Boo Tools...
+setlocal
 
-set UI_OUTPUT_DIR=src\BooTools.UI\bin\Release\net8.0-windows
+:: Configuration
+set "CONFIG=Release"
+set "FRAMEWORK=net8.0-windows"
+set "ROOT_OUTPUT_DIR=.\bin"
+set "UI_PROJECT_DIR=.\src\BooTools.UI"
+set "PLUGINS_BASE_DIR=.\src\BooTools.Plugins"
 
-echo Building solution...
-dotnet build BooTools.sln -c Release
-
+:: Clean previous build
+echo Cleaning up old build artifacts...
+if exist "%ROOT_OUTPUT_DIR%" (
+    rmdir /s /q "%ROOT_OUTPUT_DIR%"
+)
 echo.
+
+:: Build solution
+echo Building the entire solution...
+dotnet build BooTools.sln -c %CONFIG%
+if %errorlevel% neq 0 (
+    echo Solution build failed!
+    goto Fail
+)
+echo.
+
+:: Assemble files
 echo Assembling application components...
 
-REM Create the target Plugins directory in the main UI output folder
-set PLUGINS_DEST_DIR=%UI_OUTPUT_DIR%\Plugins
-echo Creating plugin directory at: %PLUGINS_DEST_DIR%
-if not exist "%PLUGINS_DEST_DIR%" mkdir "%PLUGINS_DEST_DIR%"
+:: Create output directories
+mkdir "%ROOT_OUTPUT_DIR%"
+set "PLUGINS_DEST_DIR=%ROOT_OUTPUT_DIR%\Plugins"
+mkdir "%PLUGINS_DEST_DIR%"
 
-REM --- Copy WallpaperSwitcher ---
-set PLUGIN_NAME=WallpaperSwitcher
-set PLUGIN_SOURCE_DIR=src\BooTools.Plugins\%PLUGIN_NAME%\bin\Release\net8.0-windows
-set PLUGIN_TARGET_DIR=%PLUGINS_DEST_DIR%\%PLUGIN_NAME%
-if exist "%PLUGIN_SOURCE_DIR%" (
-    echo Copying %PLUGIN_NAME% from %PLUGIN_SOURCE_DIR%
-    xcopy "%PLUGIN_SOURCE_DIR%" "%PLUGIN_TARGET_DIR%\" /s /e /i /y /q
+:: Copy main application
+echo Copying main UI application...
+xcopy "%UI_PROJECT_DIR%\bin\%CONFIG%\%FRAMEWORK%\*" "%ROOT_OUTPUT_DIR%\" /s /e /i /y /q
+if %errorlevel% neq 0 (
+    echo Failed to copy UI application!
+    goto Fail
 )
 
-REM --- Copy EnvironmentVariableEditor ---
-set PLUGIN_NAME=EnvironmentVariableEditor
-set PLUGIN_SOURCE_DIR=src\BooTools.Plugins\%PLUGIN_NAME%\bin\Release\net8.0-windows
-set PLUGIN_TARGET_DIR=%PLUGINS_DEST_DIR%\%PLUGIN_NAME%
+:: Copy WallpaperSwitcher Plugin
+set "PLUGIN_NAME=WallpaperSwitcher"
+echo Copying plugin: %PLUGIN_NAME%...
+set "PLUGIN_SOURCE_DIR=%PLUGINS_BASE_DIR%\%PLUGIN_NAME%\bin\%CONFIG%\%FRAMEWORK%"
 if exist "%PLUGIN_SOURCE_DIR%" (
-    echo Copying %PLUGIN_NAME% from %PLUGIN_SOURCE_DIR%
-    xcopy "%PLUGIN_SOURCE_DIR%" "%PLUGIN_TARGET_DIR%\" /s /e /i /y /q
+    xcopy "%PLUGIN_SOURCE_DIR%\*" "%PLUGINS_DEST_DIR%\%PLUGIN_NAME%\" /s /e /i /y /q
+) else (
+    echo Warning: Plugin source for %PLUGIN_NAME% not found.
+)
+
+:: Copy EnvironmentVariableEditor Plugin
+set "PLUGIN_NAME=EnvironmentVariableEditor"
+echo Copying plugin: %PLUGIN_NAME%...
+set "PLUGIN_SOURCE_DIR=%PLUGINS_BASE_DIR%\%PLUGIN_NAME%\bin\%CONFIG%\%FRAMEWORK%"
+if exist "%PLUGIN_SOURCE_DIR%" (
+    xcopy "%PLUGIN_SOURCE_DIR%\*" "%PLUGINS_DEST_DIR%\%PLUGIN_NAME%\" /s /e /i /y /q
+) else (
+    echo Warning: Plugin source for %PLUGIN_NAME% not found.
 )
 
 echo.
 echo Build and assembly complete!
-echo Executable location: %UI_OUTPUT_DIR%\BooTools.UI.exe
-pause
+echo The application is ready in: "%ROOT_OUTPUT_DIR%"
+goto Success
+
+:Fail
+echo.
+echo Build script failed.
+set "EXIT_CODE=1"
+goto End
+
+:Success
+echo.
+echo Build script finished successfully.
+set "EXIT_CODE=0"
+
+:End
+endlocal & exit /b %EXIT_CODE%
