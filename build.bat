@@ -1,29 +1,38 @@
 @echo off
 echo Building Boo Tools...
 
-REM Clean previous builds
-if exist "bin" rmdir /s /q "bin"
-if exist "Plugins" rmdir /s /q "Plugins"
+set UI_OUTPUT_DIR=src\BooTools.UI\bin\Release\net8.0-windows
 
-REM Build Core library
-echo Building BooTools.Core...
-dotnet build src\BooTools.Core\BooTools.Core.csproj -c Release -o bin\BooTools.Core
+echo Building solution...
+dotnet build BooTools.sln -c Release
 
-REM Build Main application
-echo Building BooTools.UI...
-dotnet build src\BooTools.UI\BooTools.UI.csproj -c Release -o bin\BooTools.UI
+echo.
+echo Assembling application components...
 
-REM Build Plugins
-echo Building WallpaperSwitcher plugin...
-dotnet build src\BooTools.Plugins\WallpaperSwitcher\WallpaperSwitcher.csproj -c Release -o bin\BooTools.UI\Plugins\WallpaperSwitcher
-echo Building EnvironmentVariableEditor plugin...
-dotnet build src\BooTools.Plugins\EnvironmentVariableEditor\EnvironmentVariableEditor.csproj -c Release -o bin\BooTools.UI\Plugins\EnvironmentVariableEditor
+REM Create the target Plugins directory in the main UI output folder
+set PLUGINS_DEST_DIR=%UI_OUTPUT_DIR%\Plugins
+echo Creating plugin directory at: %PLUGINS_DEST_DIR%
+if not exist "%PLUGINS_DEST_DIR%" mkdir "%PLUGINS_DEST_DIR%"
 
-REM Copy dependencies
-echo Copying dependencies...
-copy "bin\BooTools.Core\*.dll" "bin\BooTools.UI\"
-echo Dependencies copied.
+REM --- Copy WallpaperSwitcher ---
+set PLUGIN_NAME=WallpaperSwitcher
+set PLUGIN_SOURCE_DIR=src\BooTools.Plugins\%PLUGIN_NAME%\bin\Release\net8.0-windows
+set PLUGIN_TARGET_DIR=%PLUGINS_DEST_DIR%\%PLUGIN_NAME%
+if exist "%PLUGIN_SOURCE_DIR%" (
+    echo Copying %PLUGIN_NAME% from %PLUGIN_SOURCE_DIR%
+    xcopy "%PLUGIN_SOURCE_DIR%" "%PLUGIN_TARGET_DIR%\" /s /e /i /y /q
+)
 
-echo Build complete!
-echo Executable location: bin\BooTools.UI\BooTools.UI.exe
+REM --- Copy EnvironmentVariableEditor ---
+set PLUGIN_NAME=EnvironmentVariableEditor
+set PLUGIN_SOURCE_DIR=src\BooTools.Plugins\%PLUGIN_NAME%\bin\Release\net8.0-windows
+set PLUGIN_TARGET_DIR=%PLUGINS_DEST_DIR%\%PLUGIN_NAME%
+if exist "%PLUGIN_SOURCE_DIR%" (
+    echo Copying %PLUGIN_NAME% from %PLUGIN_SOURCE_DIR%
+    xcopy "%PLUGIN_SOURCE_DIR%" "%PLUGIN_TARGET_DIR%\" /s /e /i /y /q
+)
+
+echo.
+echo Build and assembly complete!
+echo Executable location: %UI_OUTPUT_DIR%\BooTools.UI.exe
 pause

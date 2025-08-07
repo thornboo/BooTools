@@ -44,7 +44,7 @@ For more technical details, please see the [Architecture Documentation](./docs/é
     ```
 
 3.  **Run the application**
-    The executable is located in the `src\BooTools.UI\bin\Release\net8.0-windows\` directory.
+    The executable is located at: `src\BooTools.UI\bin\Release\net8.0-windows\BooTools.UI.exe`.
 
 ## How to Contribute
 
