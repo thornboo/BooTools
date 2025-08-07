@@ -18,17 +18,5 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
-  <!-- 复制现代插件版本到输出目录 -->
-  <ItemGroup>
-    <None Include="WallpaperSwitcherModernPlugin.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <Target Name="RemoveBooToolsCoreFromOutput" AfterTargets="Build">
-    <Delete Files="$(OutputPath)BooTools.Core.dll" />
-    <Delete Files="$(OutputPath)BooTools.Core.pdb" />
-  </Target>
-
 </Project> 
  
