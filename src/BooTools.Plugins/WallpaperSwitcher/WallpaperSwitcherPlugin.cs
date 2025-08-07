@@ -22,7 +22,7 @@ namespace BooTools.Plugins.WallpaperSwitcher
         public string Name => "壁纸切换器";
         public string Description => "定时自动切换桌面壁纸";
         public string Version => "1.0.0";
-        public string Author => "Boo Tools";
+        public string Author => "thornboo";
         public string IconPath => "icon.png";
         
         public bool IsEnabled { get; set; }

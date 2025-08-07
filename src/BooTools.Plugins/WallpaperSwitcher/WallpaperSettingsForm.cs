@@ -29,8 +29,8 @@ namespace BooTools.Plugins.WallpaperSwitcher
             this.AutoScaleMode = AutoScaleMode.Dpi;
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.Text = "壁纸切换器设置";
-            this.Size = new System.Drawing.Size(600, 550);
-            this.MinimumSize = new System.Drawing.Size(550, 500);
+            this.Size = new System.Drawing.Size(900, 825);
+            this.MinimumSize = new System.Drawing.Size(825, 750);
             this.StartPosition = FormStartPosition.CenterParent;
             this.Padding = new Padding(10);
 
@@ -148,7 +148,7 @@ namespace BooTools.Plugins.WallpaperSwitcher
             using var form = new Form()
             {
                 Text = title,
-                Size = new System.Drawing.Size(350, 150),
+                Size = new System.Drawing.Size(525, 225),
                 StartPosition = FormStartPosition.CenterParent,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
                 MaximizeBox = false,

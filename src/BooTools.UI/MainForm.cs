@@ -17,10 +17,10 @@ namespace BooTools.UI
         private readonly IServiceProvider _services;
         private MenuStrip _menuStrip = null!;
         private ListView _pluginListView = null!;
-        private Button _btnStartAll = null!;
-        private Button _btnStopAll = null!;
         private Button _btnRefresh = null!;
         private NotifyIcon _trayIcon = null!;
+        private ToolStripMenuItem _minimizeOnCloseMenuItem = null!;
+        private bool _minimizeOnClose = true; // 默认为 true
         
         public MainForm(IPluginManager pluginManager, IServiceProvider services)
         {
@@ -68,114 +68,73 @@ namespace BooTools.UI
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             
             this.Text = "Boo Tools - Windows 工具箱";
-            this.Size = new Size(800, 600);
+            this.Size = new Size(1200, 900);
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.FormBorderStyle = FormBorderStyle.Sizable; // 改为可调整大小
-            this.MinimumSize = new Size(650, 500); // 设置最小尺寸
-            
-            // 创建菜单栏
+            this.FormBorderStyle = FormBorderStyle.Sizable;
+            this.MinimumSize = new Size(975, 750); // 设置最小尺寸
+            this.Padding = new Padding(10); // 为整个窗口提供边距
+
+            // --- 菜单栏 ---
             _menuStrip = new MenuStrip();
             this.MainMenuStrip = _menuStrip;
             
+            // 文件菜单
+            var fileMenuItem = new ToolStripMenuItem("文件(&F)");
+            var refreshMenuItem = new ToolStripMenuItem("刷新插件(&R)");
+            refreshMenuItem.Click += BtnRefresh_Click; // 复用现有逻辑
+            var exitMenuItem = new ToolStripMenuItem("退出(&X)");
+            exitMenuItem.Click += (s, e) => 
+            {
+                _minimizeOnClose = false; // 确保能真正退出
+                Application.Exit();
+            };
+            fileMenuItem.DropDownItems.AddRange(new ToolStripItem[] { refreshMenuItem, new ToolStripSeparator(), exitMenuItem });
+
             // 设置菜单
             var settingsMenuItem = new ToolStripMenuItem("设置(&S)");
-            settingsMenuItem.Click += SettingsMenuItem_Click;
-            
-            // 插件商店菜单
+            _minimizeOnCloseMenuItem = new ToolStripMenuItem("关闭时最小化到托盘");
+            _minimizeOnCloseMenuItem.CheckOnClick = true;
+            _minimizeOnCloseMenuItem.Checked = _minimizeOnClose; // 从字段初始化
+            _minimizeOnCloseMenuItem.CheckedChanged += MinimizeOnCloseMenuItem_CheckedChanged;
+            settingsMenuItem.DropDownItems.AddRange(new ToolStripItem[] { _minimizeOnCloseMenuItem });
+
             var storeMenuItem = new ToolStripMenuItem("插件商店(&P)");
             storeMenuItem.Click += StoreMenuItem_Click;
             
-            // 调试菜单
             var debugMenuItem = new ToolStripMenuItem("调试(&D)");
-            
-            // 调试菜单的子菜单项
             var consoleMenuItem = new ToolStripMenuItem("控制台(&C)");
             consoleMenuItem.Click += ConsoleMenuItem_Click;
-            
             var debugConfigMenuItem = new ToolStripMenuItem("调试配置(&D)");
             debugConfigMenuItem.Click += DebugConfigMenuItem_Click;
+            debugMenuItem.DropDownItems.AddRange(new ToolStripItem[] { consoleMenuItem, debugConfigMenuItem });
             
-            // 将子菜单添加到调试菜单
-            debugMenuItem.DropDownItems.AddRange(new ToolStripItem[]
-            {
-                consoleMenuItem,
-                debugConfigMenuItem
-            });
-            
-            // 关于菜单
             var aboutMenuItem = new ToolStripMenuItem("关于(&A)");
             aboutMenuItem.Click += AboutMenuItem_Click;
             
-            _menuStrip.Items.AddRange(new ToolStripItem[]
-            {
-                settingsMenuItem,
-                storeMenuItem,
-                debugMenuItem,
-                aboutMenuItem
-            });
-            
-            // 插件列表 - 使用停靠和锚定以适应DPI缩放
+            _menuStrip.Items.AddRange(new ToolStripItem[] { fileMenuItem, settingsMenuItem, storeMenuItem, debugMenuItem, aboutMenuItem });
+
+            // --- 插件列表 ---
             _pluginListView = new ListView
             {
                 View = View.Details,
                 FullRowSelect = true,
                 GridLines = true,
-                Location = new Point(10, 30),
-                Size = new Size(760, 450),
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom
+                Dock = DockStyle.Fill // 关键：填满剩余空间
             };
             
-            _pluginListView.Columns.Add("插件名称", 150);
-            _pluginListView.Columns.Add("描述", 280);
-            _pluginListView.Columns.Add("版本", 80);
-            _pluginListView.Columns.Add("状态", 100);
-            _pluginListView.Columns.Add("作者", 120);
+            _pluginListView.Columns.Add("插件名称", 200);
+            _pluginListView.Columns.Add("描述", 350);
+            _pluginListView.Columns.Add("版本", 100);
+            _pluginListView.Columns.Add("状态", 120);
+            _pluginListView.Columns.Add("作者", 150);
             
             _pluginListView.DoubleClick += PluginListView_DoubleClick;
             _pluginListView.MouseClick += PluginListView_MouseClick;
             
-            // 按钮 - 使用锚定以适应DPI缩放
-            _btnStartAll = new Button
-            {
-                Text = "启动所有插件",
-                Location = new Point(10, 490),
-                Size = new Size(100, 30),
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left
-            };
-            _btnStartAll.Click += BtnStartAll_Click;
-            
-            _btnStopAll = new Button
-            {
-                Text = "停止所有插件",
-                Location = new Point(120, 490),
-                Size = new Size(100, 30),
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left
-            };
-            _btnStopAll.Click += BtnStopAll_Click;
-            
-            _btnRefresh = new Button
-            {
-                Text = "刷新插件",
-                Location = new Point(230, 490),
-                Size = new Size(100, 30),
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left
-            };
-            _btnRefresh.Click += BtnRefresh_Click;
-            
-            var btnExit = new Button
-            {
-                Text = "退出",
-                Location = new Point(670, 490),
-                Size = new Size(100, 30),
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Right
-            };
-            btnExit.Click += (s, e) => Application.Exit();
-            
-            // 添加控件
-            this.Controls.AddRange(new Control[]
-            {
-                _menuStrip, _pluginListView, _btnStartAll, _btnStopAll, _btnRefresh, btnExit
-            });
+            // --- 添加控件到主窗口 ---
+            // 停靠顺序很重要：先添加四周的，再添加填充的
+            this.Controls.Add(_pluginListView);
+            this.Controls.Add(_menuStrip);
             
             // 窗体关闭事件
             this.FormClosing += MainForm_FormClosing;
@@ -317,44 +276,6 @@ namespace BooTools.UI
             LoadPluginsAsync(); // 刷新插件列表
         }
         
-        private async void BtnStartAll_Click(object? sender, EventArgs e)
-        {
-            try
-            {
-                var result = await _pluginManager.StartAllEnabledPluginsAsync();
-                if (!result.IsSuccess)
-                {
-                    MessageBox.Show($"启动插件时发生错误:\n{result.ErrorMessage}", "错误", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-                LoadPluginsAsync();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"启动所有插件失败: {ex.Message}", "错误", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        
-        private async void BtnStopAll_Click(object? sender, EventArgs e)
-        {
-            try
-            {
-                var result = await _pluginManager.StopAllPluginsAsync();
-                if (!result.IsSuccess)
-                {
-                    MessageBox.Show($"停止插件时发生错误:\n{result.ErrorMessage}", "错误", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-                LoadPluginsAsync();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"停止所有插件失败: {ex.Message}", "错误", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        
         private async void BtnRefresh_Click(object? sender, EventArgs e)
         {
             try
@@ -390,7 +311,11 @@ namespace BooTools.UI
                 this.WindowState = FormWindowState.Normal;
             });
             contextMenu.Items.Add("-");
-            contextMenu.Items.Add("退出", null, (s, e) => Application.Exit());
+            contextMenu.Items.Add("退出", null, (s, e) => 
+            {
+                _minimizeOnClose = false; // 确保能真正退出
+                Application.Exit();
+            });
             
             _trayIcon.ContextMenuStrip = contextMenu;
             _trayIcon.DoubleClick += (s, e) => 
@@ -402,17 +327,18 @@ namespace BooTools.UI
         
         private void MainForm_FormClosing(object? sender, FormClosingEventArgs e)
         {
-            if (e.CloseReason == CloseReason.UserClosing)
+            // 仅当用户通过UI关闭窗口且设置了最小化到托盘时，才取消关闭
+            if (_minimizeOnClose && e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
                 this.Hide();
             }
         }
 
-        // 设置菜单事件处理
-        private void SettingsMenuItem_Click(object? sender, EventArgs e)
+        private void MinimizeOnCloseMenuItem_CheckedChanged(object? sender, EventArgs e)
         {
-            MessageBox.Show("设置功能正在开发中...", "设置", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            _minimizeOnClose = _minimizeOnCloseMenuItem.Checked;
+            // TODO: 将此设置持久化到配置文件
         }
         
         // 插件商店菜单事件处理

@@ -51,10 +51,10 @@ namespace BooTools.UI
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             
             this.Text = "控制台";
-            this.Size = new System.Drawing.Size(900, 650);
+            this.Size = new System.Drawing.Size(1350, 975);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.Sizable;
-            this.MinimumSize = new System.Drawing.Size(700, 450); // 设置最小尺寸
+            this.MinimumSize = new System.Drawing.Size(1050, 675); // 设置最小尺寸
         }
 
         private void RefreshTimer_Tick(object? sender, EventArgs e)

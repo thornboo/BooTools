@@ -30,8 +30,8 @@ namespace BooTools.UI
             this.AutoScaleMode = AutoScaleMode.Dpi;
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.Text = "调试配置";
-            this.Size = new System.Drawing.Size(500, 400);
-            this.MinimumSize = new System.Drawing.Size(450, 350);
+            this.Size = new System.Drawing.Size(750, 600);
+            this.MinimumSize = new System.Drawing.Size(675, 525);
             this.StartPosition = FormStartPosition.CenterParent;
             this.Padding = new Padding(10);
 
