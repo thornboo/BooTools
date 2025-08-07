@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>BooTools.Plugins.EnvironmentVariableEditor</AssemblyName>
+    <RootNamespace>BooTools.Plugins.EnvironmentVariableEditor</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BooTools.Core\BooTools.Core.csproj" />
+  </ItemGroup>
+
+</Project>
