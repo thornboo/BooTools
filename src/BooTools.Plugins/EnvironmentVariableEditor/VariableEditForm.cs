@@ -38,7 +38,7 @@ namespace BooTools.Plugins.EnvironmentVariableEditor
             // 
             this.txtName.Location = new System.Drawing.Point(16, 32);
             this.txtName.Name = "txtName";
-            this.txtName.Size = new System.Drawing.Size(356, 23);
+            this.txtName.Size = new System.Drawing.Size(544, 23);
             this.txtName.TabIndex = 1;
             // 
             // lblValue
@@ -55,13 +55,13 @@ namespace BooTools.Plugins.EnvironmentVariableEditor
             this.txtValue.Location = new System.Drawing.Point(16, 87);
             this.txtValue.Multiline = true;
             this.txtValue.Name = "txtValue";
-            this.txtValue.Size = new System.Drawing.Size(356, 100);
+            this.txtValue.Size = new System.Drawing.Size(544, 150);
             this.txtValue.TabIndex = 3;
             // 
             // btnOK
             // 
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOK.Location = new System.Drawing.Point(216, 205);
+            this.btnOK.Location = new System.Drawing.Point(405, 326);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 4;
@@ -71,7 +71,7 @@ namespace BooTools.Plugins.EnvironmentVariableEditor
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(297, 205);
+            this.btnCancel.Location = new System.Drawing.Point(486, 326);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 5;
@@ -84,7 +84,7 @@ namespace BooTools.Plugins.EnvironmentVariableEditor
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(384, 241);
+            this.ClientSize = new System.Drawing.Size(576, 362);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.txtValue);

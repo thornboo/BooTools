@@ -33,10 +33,10 @@ namespace BooTools.Plugins.EnvironmentVariableEditor
             Metadata = new PluginMetadata
             {
                 Id = "EnvironmentVariableEditor",
-                Name = "Environment Variable Editor",
-                Description = "A user-friendly tool to view and edit user and system environment variables.",
+                Name = "环境变量编辑器",
+                Description = "一个用于查看和编辑用户与系统环境变量的工具。",
                 Version = new Version(1, 0, 0),
-                Author = "Gemini"
+                Author = "thornboo"
             };
         }
 

@@ -28,81 +28,52 @@ namespace BooTools.Plugins.EnvironmentVariableEditor
 
     public partial class EnvironmentEditorForm : Form
     {
-        private readonly Dictionary<string, string> _userVariables;
-        private readonly Dictionary<string, string> _systemVariables;
+        private Dictionary<string, string> _userVariables;
+        private Dictionary<string, string> _systemVariables;
+        private readonly bool _isAdmin;
 
         public EnvironmentEditorForm()
         {
             InitializeComponent();
-            _userVariables = LoadVariables(EnvironmentVariableTarget.User);
-            _systemVariables = LoadVariables(EnvironmentVariableTarget.Machine);
-            PopulateListView(lvUser, _userVariables);
-            PopulateListView(lvSystem, _systemVariables);
-            CheckAdminPrivileges();
-        }
 
-        private void InitializeComponent()
-        {
-            // Form setup
-            this.components = new System.ComponentModel.Container();
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 600);
-            this.Text = "Environment Variable Editor";
-            this.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, ((byte)(0)));
+            using (var identity = WindowsIdentity.GetCurrent())
+            {
+                var principal = new WindowsPrincipal(identity);
+                _isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
 
-            // TabControl
-            this.tabControl = new TabControl();
-            this.tabControl.Dock = DockStyle.Fill;
-            this.tabPageUser = new TabPage("User Variables");
-            this.tabPageSystem = new TabPage("System Variables");
-            this.tabControl.Controls.Add(this.tabPageUser);
-            this.tabControl.Controls.Add(this.tabPageSystem);
+            _userVariables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            _systemVariables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            // User Variables ListView
-            this.lvUser = new ListView();
-            this.lvUser.Dock = DockStyle.Fill;
-            this.lvUser.View = View.Details;
-            this.lvUser.FullRowSelect = true;
-            this.lvUser.Columns.Add("Name", 200);
-            this.lvUser.Columns.Add("Value", 400);
-            this.tabPageUser.Controls.Add(this.lvUser);
+            LoadAndPopulateAllVariables();
+            UpdateControlsState();
 
-            // System Variables ListView
-            this.lvSystem = new ListView();
-            this.lvSystem.Dock = DockStyle.Fill;
-            this.lvSystem.View = View.Details;
-            this.lvSystem.FullRowSelect = true;
-            this.lvSystem.Columns.Add("Name", 200);
-            this.lvSystem.Columns.Add("Value", 400);
-            this.tabPageSystem.Controls.Add(this.lvSystem);
-            
-            // Buttons
-            this.btnAdd = new Button { Text = "Add", Left = 10, Top = 560 };
-            this.btnEdit = new Button { Text = "Edit", Left = 90, Top = 560 };
-            this.btnDelete = new Button { Text = "Delete", Left = 170, Top = 560 };
-            this.btnSave = new Button { Text = "Save", Left = 620, Top = 560, Anchor = (AnchorStyles.Top | AnchorStyles.Right) };
-            this.btnCancel = new Button { Text = "Cancel", Left = 710, Top = 560, Anchor = (AnchorStyles.Top | AnchorStyles.Right) };
-
-            // Add controls to form
-            this.Controls.Add(this.tabControl);
-            this.Controls.Add(this.btnAdd);
-            this.Controls.Add(this.btnEdit);
-            this.Controls.Add(this.btnDelete);
-            this.Controls.Add(this.btnSave);
-            this.Controls.Add(this.btnCancel);
-
-            // Button Events
+            // Bind events
             this.btnAdd.Click += BtnAdd_Click;
             this.btnEdit.Click += BtnEdit_Click;
             this.btnDelete.Click += BtnDelete_Click;
+            this.btnRefresh.Click += BtnRefresh_Click;
             this.btnSave.Click += BtnSave_Click;
             this.btnCancel.Click += (s, e) => this.Close();
+            this.tabControl.SelectedIndexChanged += (s, e) => UpdateControlsState();
         }
 
-        private Dictionary<string, string> LoadVariables(EnvironmentVariableTarget target)
+        private void LoadAndPopulateAllVariables()
         {
+            LoadVariables(EnvironmentVariableTarget.User, _userVariables);
+            LoadVariables(EnvironmentVariableTarget.Machine, _systemVariables);
+            PopulateListView(lvUser, _userVariables);
+            PopulateListView(lvSystem, _systemVariables);
+        }
+
+        private void LoadVariables(EnvironmentVariableTarget target, Dictionary<string, string> dictionary)
+        {
+            dictionary.Clear();
             var variables = Environment.GetEnvironmentVariables(target);
-            return variables.Cast<DictionaryEntry>().ToDictionary(de => (string)de.Key, de => (string)(de.Value ?? ""));
+            foreach (DictionaryEntry de in variables)
+            {
+                dictionary[(string)de.Key] = (string)(de.Value ?? "");
+            }
         }
 
         private void PopulateListView(ListView listView, Dictionary<string, string> variables)
@@ -116,24 +87,29 @@ namespace BooTools.Plugins.EnvironmentVariableEditor
             }
         }
 
-        private void CheckAdminPrivileges()
+        private void UpdateControlsState()
         {
-            using (var identity = WindowsIdentity.GetCurrent())
+            bool isSystemTab = tabControl.SelectedTab == tabPageSystem;
+            
+            if (isSystemTab)
             {
-                var principal = new WindowsPrincipal(identity);
-                var isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
-                if (!isAdmin)
-                {
-                    tabPageSystem.Text += " (Read-only)";
-                    // Disable editing controls for system variables if not admin
-                    tabControl.SelectedIndexChanged += (s, e) =>
-                    {
-                        bool isSystemTab = tabControl.SelectedTab == tabPageSystem;
-                        btnEdit.Enabled = !isSystemTab;
-                        btnDelete.Enabled = !isSystemTab;
-                    };
-                }
+                tabPageSystem.Text = _isAdmin ? "系统变量" : "系统变量 (只读)";
+                btnAdd.Enabled = _isAdmin;
+                btnEdit.Enabled = _isAdmin;
+                btnDelete.Enabled = _isAdmin;
             }
+            else
+            {
+                btnAdd.Enabled = true;
+                btnEdit.Enabled = true;
+                btnDelete.Enabled = true;
+            }
+        }
+
+        private void BtnRefresh_Click(object? sender, EventArgs e)
+        {
+            LoadAndPopulateAllVariables();
+            MessageBox.Show("环境变量已刷新。", "刷新成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BtnAdd_Click(object? sender, EventArgs e)
@@ -148,6 +124,11 @@ namespace BooTools.Plugins.EnvironmentVariableEditor
             {
                 if (form.ShowDialog() == DialogResult.OK)
                 {
+                    if (string.IsNullOrWhiteSpace(form.VariableName))
+                    {
+                        MessageBox.Show("变量名不能为空。", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
                     activeDictionary[form.VariableName] = form.VariableValue;
                     PopulateListView(activeListView, activeDictionary);
                 }
@@ -171,6 +152,11 @@ namespace BooTools.Plugins.EnvironmentVariableEditor
             {
                 if (form.ShowDialog() == DialogResult.OK)
                 {
+                    // If name changed, remove old one
+                    if (!varName.Equals(form.VariableName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        activeDictionary.Remove(varName);
+                    }
                     activeDictionary[form.VariableName] = form.VariableValue;
                     PopulateListView(activeListView, activeDictionary);
                 }
@@ -189,7 +175,7 @@ namespace BooTools.Plugins.EnvironmentVariableEditor
             var varName = selectedItem.Text;
             var activeDictionary = (selectedTab == tabPageUser) ? _userVariables : _systemVariables;
 
-            if (MessageBox.Show($"Are you sure you want to delete '{varName}'?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+            if (MessageBox.Show($"确定要删除变量 '{varName}' 吗?", "确认删除", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
             {
                 activeDictionary.Remove(varName);
                 PopulateListView(activeListView, activeDictionary);
@@ -201,66 +187,50 @@ namespace BooTools.Plugins.EnvironmentVariableEditor
             try
             {
                 // Save User Variables
-                var originalUserVars = LoadVariables(EnvironmentVariableTarget.User);
-                SaveChanges(originalUserVars, _userVariables, EnvironmentVariableTarget.User);
+                SaveChanges(EnvironmentVariableTarget.User, _userVariables);
 
-                // Save System Variables, checking for admin rights
-                using (var identity = WindowsIdentity.GetCurrent())
+                // Save System Variables, checking for admin rights again
+                if (_isAdmin)
                 {
-                    var principal = new WindowsPrincipal(identity);
-                    if (principal.IsInRole(WindowsBuiltInRole.Administrator))
-                    {
-                        var originalSystemVars = LoadVariables(EnvironmentVariableTarget.Machine);
-                        SaveChanges(originalSystemVars, _systemVariables, EnvironmentVariableTarget.Machine);
-                    }
-                    else
-                    {
-                        MessageBox.Show("Administrator privileges are required to save system variables. System variables were not saved.", "Permission Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
+                    SaveChanges(EnvironmentVariableTarget.Machine, _systemVariables);
+                }
+                else
+                {
+                    MessageBox.Show("需要管理员权限才能保存系统变量。系统变量未作任何更改。", "权限不足", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
 
                 // Broadcast that environment settings have changed.
                 NativeMethods.SendMessageTimeout(NativeMethods.HWND_BROADCAST, NativeMethods.WM_SETTINGCHANGE, IntPtr.Zero, "Environment", 0, 5000, out _);
 
-                MessageBox.Show("Changes saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("更改已成功保存！", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"An error occurred while saving: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"保存时发生错误: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void SaveChanges(Dictionary<string, string> originalVars, Dictionary<string, string> newVars, EnvironmentVariableTarget target)
+        private void SaveChanges(EnvironmentVariableTarget target, Dictionary<string, string> newVars)
         {
-            // Find deleted variables
-            foreach (var key in originalVars.Keys.Except(newVars.Keys))
+            var originalVars = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            LoadVariables(target, originalVars);
+
+            // Find and apply deleted variables
+            foreach (var key in originalVars.Keys.Except(newVars.Keys, StringComparer.OrdinalIgnoreCase))
             {
                 Environment.SetEnvironmentVariable(key, null, target);
             }
 
-            // Find added or modified variables
+            // Find and apply added or modified variables
             foreach (var pair in newVars)
             {
-                if (!originalVars.ContainsKey(pair.Key) || originalVars[pair.Key] != pair.Value)
+                if (!originalVars.ContainsKey(pair.Key) || !originalVars[pair.Key].Equals(pair.Value, StringComparison.Ordinal))
                 {
                     Environment.SetEnvironmentVariable(pair.Key, pair.Value, target);
                 }
             }
         }
-
-        // UI component fields
-        private System.ComponentModel.IContainer? components = null;
-        private TabControl tabControl = null!;
-        private TabPage tabPageUser = null!;
-        private TabPage tabPageSystem = null!;
-        private ListView lvUser = null!;
-        private ListView lvSystem = null!;
-        private Button btnAdd = null!;
-        private Button btnEdit = null!;
-        private Button btnDelete = null!;
-        private Button btnSave = null!;
-        private Button btnCancel = null!;
     }
 }

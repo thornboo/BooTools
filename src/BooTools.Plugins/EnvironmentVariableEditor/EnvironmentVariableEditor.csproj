@@ -13,4 +13,16 @@
     <ProjectReference Include="..\..\BooTools.Core\BooTools.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="EnvironmentEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="EnvironmentEditorForm.Designer.cs">
+      <DependentUpon>EnvironmentEditorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Update="VariableEditForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+
 </Project>
