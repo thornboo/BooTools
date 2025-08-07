@@ -1,112 +1,73 @@
-using System;
 using System.Windows.Forms;
 
 namespace BooTools.Plugins.EnvironmentVariableEditor
 {
-    public partial class VariableEditForm : Form
+    public class VariableEditForm : Form
     {
-        public string VariableName => txtName?.Text ?? "";
-        public string VariableValue => txtValue?.Text ?? "";
+        public string VariableName => _txtName.Text;
+        public string VariableValue => _txtValue.Text;
+
+        private TextBox _txtName = null!;
+        private TextBox _txtValue = null!;
 
         public VariableEditForm(string name = "", string value = "")
         {
             InitializeComponent();
-            if (txtName != null) txtName.Text = name;
-            if (txtValue != null) txtValue.Text = value;
+            _txtName.Text = name;
+            _txtValue.Text = value;
         }
 
         private void InitializeComponent()
         {
-            this.lblName = new System.Windows.Forms.Label();
-            this.txtName = new System.Windows.Forms.TextBox();
-            this.lblValue = new System.Windows.Forms.Label();
-            this.txtValue = new System.Windows.Forms.TextBox();
-            this.btnOK = new System.Windows.Forms.Button();
-            this.btnCancel = new System.Windows.Forms.Button();
-            this.SuspendLayout();
-            // 
-            // lblName
-            // 
-            this.lblName.AutoSize = true;
-            this.lblName.Location = new System.Drawing.Point(13, 13);
-            this.lblName.Name = "lblName";
-            this.lblName.Size = new System.Drawing.Size(87, 15);
-            this.lblName.TabIndex = 0;
-            this.lblName.Text = "Variable Name:";
-            // 
-            // txtName
-            // 
-            this.txtName.Location = new System.Drawing.Point(16, 32);
-            this.txtName.Name = "txtName";
-            this.txtName.Size = new System.Drawing.Size(544, 23);
-            this.txtName.TabIndex = 1;
-            // 
-            // lblValue
-            // 
-            this.lblValue.AutoSize = true;
-            this.lblValue.Location = new System.Drawing.Point(13, 68);
-            this.lblValue.Name = "lblValue";
-            this.lblValue.Size = new System.Drawing.Size(82, 15);
-            this.lblValue.TabIndex = 2;
-            this.lblValue.Text = "Variable Value:";
-            // 
-            // txtValue
-            // 
-            this.txtValue.Location = new System.Drawing.Point(16, 87);
-            this.txtValue.Multiline = true;
-            this.txtValue.Name = "txtValue";
-            this.txtValue.Size = new System.Drawing.Size(544, 150);
-            this.txtValue.TabIndex = 3;
-            // 
-            // btnOK
-            // 
-            this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOK.Location = new System.Drawing.Point(405, 326);
-            this.btnOK.Name = "btnOK";
-            this.btnOK.Size = new System.Drawing.Size(75, 23);
-            this.btnOK.TabIndex = 4;
-            this.btnOK.Text = "OK";
-            this.btnOK.UseVisualStyleBackColor = true;
-            // 
-            // btnCancel
-            // 
-            this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(486, 326);
-            this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(75, 23);
-            this.btnCancel.TabIndex = 5;
-            this.btnCancel.Text = "Cancel";
-            this.btnCancel.UseVisualStyleBackColor = true;
-            // 
-            // VariableEditForm
-            // 
-            this.AcceptButton = this.btnOK;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(576, 362);
-            this.Controls.Add(this.btnCancel);
-            this.Controls.Add(this.btnOK);
-            this.Controls.Add(this.txtValue);
-            this.Controls.Add(this.lblValue);
-            this.Controls.Add(this.txtName);
-            this.Controls.Add(this.lblName);
-            this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Text = "编辑变量";
+            this.Size = new System.Drawing.Size(600, 400);
+            this.StartPosition = FormStartPosition.CenterParent;
+            this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "VariableEditForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Edit Variable";
-            this.ResumeLayout(false);
-            this.PerformLayout();
-        }
+            this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 
-        private System.Windows.Forms.Label lblName = null!;
-        private System.Windows.Forms.TextBox txtName = null!;
-        private System.Windows.Forms.Label lblValue = null!;
-        private System.Windows.Forms.TextBox txtValue = null!;
-        private System.Windows.Forms.Button btnOK = null!;
-        private System.Windows.Forms.Button btnCancel = null!;
+            var mainTable = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 3,
+                Padding = new Padding(10)
+            };
+            mainTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            mainTable.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            mainTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            mainTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            
+            var lblName = new Label { Text = "变量名:", AutoSize = true, Anchor = AnchorStyles.Left, TextAlign = System.Drawing.ContentAlignment.MiddleLeft, Margin = new Padding(3, 6, 3, 3) };
+            _txtName = new TextBox { Dock = DockStyle.Fill, Margin = new Padding(3) };
+            
+            var lblValue = new Label { Text = "变量值:", AutoSize = true, Anchor = AnchorStyles.Left, TextAlign = System.Drawing.ContentAlignment.MiddleLeft, Margin = new Padding(3, 6, 3, 3) };
+            _txtValue = new TextBox { Dock = DockStyle.Fill, Multiline = true, ScrollBars = ScrollBars.Vertical, Margin = new Padding(3) };
+
+            mainTable.Controls.Add(lblName, 0, 0);
+            mainTable.SetColumnSpan(lblName, 2);
+            mainTable.Controls.Add(_txtName, 0, 0);
+            mainTable.SetColumnSpan(_txtName, 2);
+            
+            mainTable.Controls.Add(lblValue, 0, 1);
+            mainTable.SetColumnSpan(lblValue, 2);
+            mainTable.Controls.Add(_txtValue, 0, 1);
+            mainTable.SetColumnSpan(_txtValue, 2);
+
+            var buttonFlowPanel = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.RightToLeft, AutoSize = true };
+            var btnOK = new Button { Text = "确定", DialogResult = DialogResult.OK, Size = new System.Drawing.Size(90, 30), Margin = new Padding(10, 15, 3, 3) };
+            var btnCancel = new Button { Text = "取消", DialogResult = DialogResult.Cancel, Size = new System.Drawing.Size(90, 30), Margin = new Padding(3, 15, 3, 3) };
+            
+            buttonFlowPanel.Controls.Add(btnCancel);
+            buttonFlowPanel.Controls.Add(btnOK);
+            mainTable.Controls.Add(buttonFlowPanel, 0, 2);
+            mainTable.SetColumnSpan(buttonFlowPanel, 2);
+
+            this.Controls.Add(mainTable);
+            this.AcceptButton = btnOK;
+            this.CancelButton = btnCancel;
+        }
     }
 }

@@ -10,15 +10,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\BooTools.Core\BooTools.Core.csproj" />
+    <ProjectReference Include="..\..\BooTools.Core\BooTools.Core.csproj">
+      <Private>false</Private>
+      <CopyLocal>false</CopyLocal>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
     <Compile Update="EnvironmentEditorForm.cs">
       <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="EnvironmentEditorForm.Designer.cs">
-      <DependentUpon>EnvironmentEditorForm.cs</DependentUpon>
     </Compile>
     <Compile Update="VariableEditForm.cs">
       <SubType>Form</SubType>
