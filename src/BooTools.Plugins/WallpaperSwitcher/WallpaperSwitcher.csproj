@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BooTools.Core\BooTools.Core.csproj">
+      <Private>false</Private>
+      <CopyLocal>false</CopyLocal>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputPath>..\..\..\bin\BooTools.UI\Plugins\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!-- 复制现代插件版本到输出目录 -->
+  <ItemGroup>
+    <None Include="WallpaperSwitcherModernPlugin.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="RemoveBooToolsCoreFromOutput" AfterTargets="Build">
+    <Delete Files="$(OutputPath)BooTools.Core.dll" />
+    <Delete Files="$(OutputPath)BooTools.Core.pdb" />
+  </Target>
+
+</Project> 
