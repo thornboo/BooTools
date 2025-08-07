@@ -61,3 +61,7 @@ BooTools 采用现代化的插件架构，以确保稳定性与灵活性：
 ## 许可证
 
 本项目采用 [MIT 许可证](LICENSE)。
+
+## 更新日志
+
+所有项目的主要变更都记录在 [CHANGELOG_CN.md](CHANGELOG_CN.md) 文件中。

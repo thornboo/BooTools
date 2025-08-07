@@ -61,3 +61,8 @@ Contributions via Issues and Pull Requests are welcome!
 ## License 
 
 This project is licensed under the [MIT License](LICENSE).
+
+## Changelog
+
+All notable changes to this project are documented in the [CHANGELOG.md](CHANGELOG.md) file.
+
