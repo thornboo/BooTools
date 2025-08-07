@@ -1,0 +1,78 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    permissions:
+      contents: write # Required to create a release
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build application
+        run: .uild.bat
+        shell: cmd
+
+      - name: Determine Release Properties
+        id: release_props
+        shell: pwsh
+        run: |
+          $is_prerelease = $false
+          $tag_prefix = "release"
+          $release_name_prefix = "Release"
+
+          if ("${{ github.ref }}" -eq "refs/heads/dev") {
+            $is_prerelease = $true
+            $tag_prefix = "prerelease"
+            $release_name_prefix = "Pre-release"
+          }
+          
+          $tag_date = (Get-Date -Format 'yyyyMMdd-HHmmss')
+          $tag_name = "$tag_prefix-$tag_date"
+          $release_name = "$release_name_prefix $tag_date"
+
+          echo "is_prerelease=$is_prerelease" >> $env:GITHUB_OUTPUT
+          echo "tag_name=$tag_name" >> $env:GITHUB_OUTPUT
+          echo "release_name=$release_name" >> $env:GITHUB_OUTPUT
+
+      - name: Package Artifacts
+        id: package
+        shell: pwsh
+        run: |
+          $artifact_dir = "${{ github.workspace }}\src\BooTools.UI\bin\Release\net8.0-windows"
+          $zip_path = "${{ github.workspace }}\boo-tools-release.zip"
+          Compress-Archive -Path "$artifact_dir\*" -DestinationPath $zip_path -Force
+          echo "zip_path=$zip_path" >> $env:GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.release_props.outputs.tag_name }}
+          release_name: ${{ steps.release_props.outputs.release_name }}
+          draft: false
+          prerelease: ${{ steps.release_props.outputs.is_prerelease }}
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.package.outputs.zip_path }}
+          asset_name: boo-tools-release.zip
+          asset_content_type: application/zip
