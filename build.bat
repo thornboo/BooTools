@@ -11,7 +11,7 @@ dotnet build src\BooTools.Core\BooTools.Core.csproj -c Release -o bin\BooTools.C
 
 REM 构建主程序
 echo 构建 BooTools.UI...
-dotnet build src\BooTools.UI\BooTools.UI.csproj -c Release -o bin\BooTools.UI
+dotnet build src\BooTools.UI\BooTools.UI.csproj -c Release
 
 REM 构建插件
 echo 构建 WallpaperSwitcher 插件...
