@@ -44,17 +44,24 @@ namespace BooTools.UI
             RefreshLogContent();
         }
 
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
         private void InitializeComponent()
         {
-            // 启用DPI感知和自动缩放
-            this.AutoScaleMode = AutoScaleMode.Dpi;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
-            
-            this.Text = "控制台";
-            this.Size = new System.Drawing.Size(1350, 975);
-            this.StartPosition = FormStartPosition.CenterScreen;
-            this.FormBorderStyle = FormBorderStyle.Sizable;
-            this.MinimumSize = new System.Drawing.Size(1050, 675); // 设置最小尺寸
+            SuspendLayout();
+            // 
+            // LogViewerForm
+            // 
+            AutoScaleDimensions = new System.Drawing.SizeF(144F, 144F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            ClientSize = new System.Drawing.Size(1328, 919);
+            Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            MinimumSize = new System.Drawing.Size(1050, 675);
+            StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            Text = "控制台";
+            ResumeLayout(false);
         }
 
         private void RefreshTimer_Tick(object? sender, EventArgs e)
