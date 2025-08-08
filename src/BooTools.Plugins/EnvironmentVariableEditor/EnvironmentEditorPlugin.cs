@@ -32,6 +32,7 @@ namespace BooTools.Plugins.EnvironmentVariableEditor
     {
         private PluginStatus _status = PluginStatus.Unloaded;
         private IPluginContext? _context;
+        private EnvironmentEditorForm? _editorForm; // 窗体实例
 
         public Dictionary<string, string> UserVariables { get; private set; }
         public Dictionary<string, string> SystemVariables { get; private set; }
@@ -156,36 +157,70 @@ namespace BooTools.Plugins.EnvironmentVariableEditor
 
         public void ShowSettings()
         {
+            // The main functionality is the editor itself, so starting the plugin is the same as showing the settings.
+            // This method can be kept for compatibility or for a different settings UI in the future.
+            StartAsync();
+        }
+        
+        public Task<PluginResult> StartAsync()
+        {
             try
             {
-                // Refresh variables each time settings are opened
-                LoadAllVariables();
-                using (var editorForm = new EnvironmentEditorForm(this))
+                if (_editorForm == null || _editorForm.IsDisposed)
                 {
-                    editorForm.ShowDialog();
+                    LoadAllVariables(); // Refresh data before showing
+                    _editorForm = new EnvironmentEditorForm(this);
+                    _editorForm.FormClosed += (s, e) => 
+                    {
+                        // When the form is closed by the user, update the status
+                        if (Status == PluginStatus.Running)
+                        {
+                            Status = PluginStatus.Stopped;
+                        }
+                    };
+                    _editorForm.Show();
                 }
+                else
+                {
+                    _editorForm.Activate();
+                }
+                
+                Status = PluginStatus.Running;
+                return Task.FromResult(PluginResult.Success("环境变量编辑器已启动。"));
             }
             catch (Exception ex)
             {
-                _context?.Logger?.LogError($"打开环境变量编辑器失败: {ex.Message}", ex);
+                _context?.Logger?.LogError($"启动环境变量编辑器失败: {ex.Message}", ex);
+                return Task.FromResult(PluginResult.Failure($"启动失败: {ex.Message}", ex));
             }
-        }
-        
-        #region Unused Lifecycle Methods
-        public Task<PluginResult> StartAsync()
-        {
-            Status = PluginStatus.Running;
-            return Task.FromResult(PluginResult.Success("Plugin is stateless and always 'running'."));
         }
 
         public Task<PluginResult> StopAsync()
         {
-            Status = PluginStatus.Stopped;
-            return Task.FromResult(PluginResult.Success("Plugin is stateless and has been 'stopped'."));
+            try
+            {
+                if (_editorForm != null && !_editorForm.IsDisposed)
+                {
+                    _editorForm.Close();
+                    _editorForm = null;
+                }
+                Status = PluginStatus.Stopped;
+                return Task.FromResult(PluginResult.Success("环境变量编辑器已停止。"));
+            }
+            catch (Exception ex)
+            {
+                _context?.Logger?.LogError($"停止环境变量编辑器失败: {ex.Message}", ex);
+                return Task.FromResult(PluginResult.Failure($"停止失败: {ex.Message}", ex));
+            }
         }
 
         public Task<PluginResult> UnloadAsync()
         {
+            // Ensure the form is closed upon unload
+            if (_editorForm != null && !_editorForm.IsDisposed)
+            {
+                _editorForm.Close();
+            }
             Status = PluginStatus.Unloaded;
             _context = null;
             return Task.FromResult(PluginResult.Success("Plugin unloaded successfully."));
@@ -200,6 +235,5 @@ namespace BooTools.Plugins.EnvironmentVariableEditor
         {
             return Task.FromResult(PluginResult.Success("No dependencies to validate."));
         }
-        #endregion
     }
 }
