@@ -1,24 +1,18 @@
 using System;
-using System.IO;
+using System.Linq;
 using System.Windows.Forms;
-using BooTools.Core;
 
 namespace BooTools.UI
 {
     public partial class LogViewerForm : Form
     {
-        private readonly ILogger _logger;
         private readonly TextBox _logTextBox;
         private readonly System.Windows.Forms.Timer _refreshTimer;
-        private string _lastLogContent = string.Empty;
 
-        public LogViewerForm(ILogger logger)
+        public LogViewerForm()
         {
-            _logger = logger;
-            
             InitializeComponent();
             
-            // 创建日志显示文本框
             _logTextBox = new TextBox
             {
                 Multiline = true,
@@ -32,88 +26,41 @@ namespace BooTools.UI
             
             this.Controls.Add(_logTextBox);
             
-            // 创建刷新定时器
+            // Load all historical logs immediately
+            LoadHistoricalLogs();
+
+            // Set up a timer to append new logs
             _refreshTimer = new System.Windows.Forms.Timer
             {
-                Interval = 1000 // 每秒刷新一次
+                Interval = 500 // Refresh every 500ms
             };
-            _refreshTimer.Tick += RefreshTimer_Tick;
+            _refreshTimer.Tick += AppendNewLogs;
             _refreshTimer.Start();
-            
-            // 初始加载日志
-            RefreshLogContent();
         }
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
+        private void LoadHistoricalLogs()
         {
-            SuspendLayout();
-            // 
-            // LogViewerForm
-            // 
-            AutoScaleDimensions = new System.Drawing.SizeF(144F, 144F);
-            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            ClientSize = new System.Drawing.Size(1328, 919);
-            Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            MinimumSize = new System.Drawing.Size(1050, 675);
-            StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            Text = "控制台";
-            ResumeLayout(false);
+            // Dequeue all messages and join them. This is done once on startup.
+            var allMessages = InMemoryLogger.LogMessages.ToArray();
+            _logTextBox.Text = string.Join(Environment.NewLine, allMessages);
+            _logTextBox.SelectionStart = _logTextBox.Text.Length;
+            _logTextBox.ScrollToCaret();
         }
 
-        private void RefreshTimer_Tick(object? sender, EventArgs e)
+        private void AppendNewLogs(object? sender, EventArgs e)
         {
-            RefreshLogContent();
-        }
-
-        private void RefreshLogContent()
-        {
-            try
+            // Dequeue any new messages and append them
+            if (InMemoryLogger.LogMessages.TryDequeue(out var message))
             {
-                // 处理 ConsoleLogger
-                if (_logger is ConsoleLogger consoleLogger)
+                var builder = new System.Text.StringBuilder();
+                builder.AppendLine(message);
+
+                while (InMemoryLogger.LogMessages.TryDequeue(out message))
                 {
-                    var fileLogger = consoleLogger.GetFileLogger();
-                    var logFilePath = fileLogger.GetLogFilePath();
-                    if (File.Exists(logFilePath))
-                    {
-                        var currentContent = File.ReadAllText(logFilePath);
-                        if (currentContent != _lastLogContent)
-                        {
-                            _logTextBox.Text = currentContent;
-                            _logTextBox.SelectionStart = _logTextBox.Text.Length;
-                            _logTextBox.ScrollToCaret();
-                            _lastLogContent = currentContent;
-                        }
-                    }
+                    builder.AppendLine(message);
                 }
-                // 处理 FileLogger
-                else if (_logger is FileLogger fileLogger)
-                {
-                    var logFilePath = fileLogger.GetLogFilePath();
-                    if (File.Exists(logFilePath))
-                    {
-                        var currentContent = File.ReadAllText(logFilePath);
-                        if (currentContent != _lastLogContent)
-                        {
-                            _logTextBox.Text = currentContent;
-                            _logTextBox.SelectionStart = _logTextBox.Text.Length;
-                            _logTextBox.ScrollToCaret();
-                            _lastLogContent = currentContent;
-                        }
-                    }
-                }
-                else
-                {
-                    _logTextBox.Text = "当前日志系统不支持文件查看";
-                }
-            }
-            catch (Exception ex)
-            {
-                _logTextBox.Text = $"读取日志文件失败: {ex.Message}";
+                
+                _logTextBox.AppendText(builder.ToString());
             }
         }
 
@@ -122,6 +69,23 @@ namespace BooTools.UI
             _refreshTimer?.Stop();
             _refreshTimer?.Dispose();
             base.OnFormClosing(e);
+        }
+        
+        // Default InitializeComponent from the designer
+        private void InitializeComponent()
+        {
+            SuspendLayout();
+            // 
+            // LogViewerForm
+            // 
+            AutoScaleDimensions = new System.Drawing.SizeF(144F, 144F);
+            AutoScaleMode = AutoScaleMode.Dpi;
+            ClientSize = new System.Drawing.Size(1328, 919);
+            Margin = new Padding(4);
+            MinimumSize = new System.Drawing.Size(1050, 675);
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "实时日志控制台";
+            ResumeLayout(false);
         }
     }
 } 

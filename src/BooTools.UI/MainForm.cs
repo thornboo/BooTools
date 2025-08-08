@@ -8,6 +8,7 @@ using BooTools.Core;
 using BooTools.Core.Management;
 using BooTools.Core.Models;
 using BooTools.Core.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace BooTools.UI
 {
@@ -15,17 +16,18 @@ namespace BooTools.UI
     {
         private readonly IPluginManager _pluginManager;
         private readonly IServiceProvider _services;
+        private readonly ILogger<MainForm> _logger;
         private MenuStrip _menuStrip = null!;
         private ListView _pluginListView = null!;
-        private Button _btnRefresh = null!;
         private NotifyIcon _trayIcon = null!;
         private ToolStripMenuItem _minimizeOnCloseMenuItem = null!;
         private bool _minimizeOnClose = true; // 默认为 true
         
-        public MainForm(IPluginManager pluginManager, IServiceProvider services)
+        public MainForm(IPluginManager pluginManager, IServiceProvider services, ILogger<MainForm> logger)
         {
             _pluginManager = pluginManager;
             _services = services;
+            _logger = logger;
             InitializeComponent();
             
             // 修正：必须先创建托盘图标对象，再为其设置图标
@@ -56,8 +58,7 @@ namespace BooTools.UI
             }
             catch (Exception ex)
             {
-                // 图标加载失败时，不影响程序运行
-                Console.WriteLine($"加载图标失败: {ex.Message}");
+                _logger.LogWarning(ex, "Failed to load application icon.");
             }
         }
         
@@ -144,6 +145,7 @@ namespace BooTools.UI
         {
             try
             {
+                _logger.LogInformation("Loading plugins into the list view...");
                 _pluginListView.Items.Clear();
                 
                 var plugins = await _pluginManager.GetInstalledPluginsAsync();
@@ -162,9 +164,11 @@ namespace BooTools.UI
                     
                     _pluginListView.Items.Add(item);
                 }
+                _logger.LogInformation("Successfully loaded {PluginCount} plugins.", plugins.Count());
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to load plugin list.");
                 MessageBox.Show($"加载插件列表失败: {ex.Message}", "错误", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -195,6 +199,7 @@ namespace BooTools.UI
                 var plugin = _pluginListView.SelectedItems[0].Tag as IPlugin;
                 if (plugin != null)
                 {
+                    _logger.LogDebug("Double-clicked plugin '{PluginId}'. Showing settings.", plugin.Metadata.Id);
                     plugin.ShowSettings();
                     LoadPluginsAsync(); // 刷新列表
                 }
@@ -208,6 +213,7 @@ namespace BooTools.UI
                 var plugin = _pluginListView.SelectedItems[0].Tag as IPlugin;
                 if (plugin != null)
                 {
+                    _logger.LogTrace("Showing context menu for plugin '{PluginId}'.", plugin.Metadata.Id);
                     ShowPluginContextMenu(plugin, e.Location);
                 }
             }
@@ -216,13 +222,15 @@ namespace BooTools.UI
         private void ShowPluginContextMenu(IPlugin plugin, Point location)
         {
             var contextMenu = new ContextMenuStrip();
+            var pluginId = plugin.Metadata.Id;
             
             // 启动/停止菜单项
             if (plugin.Status == PluginStatus.Running)
             {
                 contextMenu.Items.Add("停止插件", null, async (s, e) => 
                 {
-                    await _pluginManager.StopPluginAsync(plugin.Metadata.Id);
+                    _logger.LogInformation("Attempting to stop plugin: {PluginId}", pluginId);
+                    await _pluginManager.StopPluginAsync(pluginId);
                     LoadPluginsAsync();
                 });
             }
@@ -230,7 +238,8 @@ namespace BooTools.UI
             {
                 contextMenu.Items.Add("启动插件", null, async (s, e) => 
                 {
-                    await _pluginManager.StartPluginAsync(plugin.Metadata.Id);
+                    _logger.LogInformation("Attempting to start plugin: {PluginId}", pluginId);
+                    await _pluginManager.StartPluginAsync(pluginId);
                     LoadPluginsAsync();
                 });
             }
@@ -248,7 +257,7 @@ namespace BooTools.UI
             {
                 contextMenu.Items.Add("禁用插件", null, async (s, e) => 
                 {
-                    await _pluginManager.SetPluginEnabledAsync(plugin.Metadata.Id, false);
+                    await _pluginManager.SetPluginEnabledAsync(pluginId, false);
                     LoadPluginsAsync();
                 });
             }
@@ -256,7 +265,7 @@ namespace BooTools.UI
             {
                 contextMenu.Items.Add("启用插件", null, async (s, e) => 
                 {
-                    await _pluginManager.SetPluginEnabledAsync(plugin.Metadata.Id, true);
+                    await _pluginManager.SetPluginEnabledAsync(pluginId, true);
                     LoadPluginsAsync();
                 });
             }
@@ -266,6 +275,7 @@ namespace BooTools.UI
         
         private void OnPluginStatusChanged(object? sender, PluginStatusChangedEventArgs e)
         {
+            _logger.LogDebug("Received PluginStatusChanged event for {PluginId}. New status: {NewStatus}", e.PluginId, e.NewStatus);
             // 在UI线程中更新界面
             if (this.InvokeRequired)
             {
@@ -280,9 +290,11 @@ namespace BooTools.UI
         {
             try
             {
+                _logger.LogInformation("Manual plugin refresh requested.");
                 var result = await _pluginManager.RefreshPluginsAsync();
                 if (!result.IsSuccess)
                 {
+                    _logger.LogWarning("Plugin refresh failed: {ErrorMessage}", result.ErrorMessage);
                     MessageBox.Show($"刷新插件时发生错误:\n{result.ErrorMessage}", "错误", 
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
@@ -290,6 +302,7 @@ namespace BooTools.UI
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "An exception occurred while refreshing plugins.");
                 MessageBox.Show($"刷新插件失败: {ex.Message}", "错误", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -330,14 +343,20 @@ namespace BooTools.UI
             // 仅当用户通过UI关闭窗口且设置了最小化到托盘时，才取消关闭
             if (_minimizeOnClose && e.CloseReason == CloseReason.UserClosing)
             {
+                _logger.LogInformation("Closing to system tray.");
                 e.Cancel = true;
                 this.Hide();
+            }
+            else
+            {
+                _logger.LogInformation("Main form closing. Reason: {CloseReason}", e.CloseReason);
             }
         }
 
         private void MinimizeOnCloseMenuItem_CheckedChanged(object? sender, EventArgs e)
         {
             _minimizeOnClose = _minimizeOnCloseMenuItem.Checked;
+            _logger.LogInformation("Minimize on close set to {State}", _minimizeOnClose);
             // TODO: 将此设置持久化到配置文件
         }
         
@@ -346,29 +365,30 @@ namespace BooTools.UI
         {
             try
             {
+                _logger.LogDebug("Opening Plugin Store.");
                 var storeForm = new PluginStoreForm(_pluginManager, _services);
                 storeForm.Show();
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to open Plugin Store.");
                 MessageBox.Show($"打开插件商店失败: {ex.Message}", "错误", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         
-        // 控制台菜单事件处理（原日志查看器）
+        // 控制台菜单事件处理
         private void ConsoleMenuItem_Click(object? sender, EventArgs e)
         {
             try
             {
-                // 从依赖注入容器获取日志服务
-                var logger = new ConsoleLogger(true); // 临时解决方案
-                var logViewerForm = new LogViewerForm(logger);
-                logViewerForm.Text = "控制台 - 日志查看器";
+                _logger.LogDebug("Opening real-time log viewer.");
+                var logViewerForm = new LogViewerForm();
                 logViewerForm.Show();
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to open real-time log viewer.");
                 MessageBox.Show($"打开控制台失败: {ex.Message}", "控制台", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -379,6 +399,7 @@ namespace BooTools.UI
         {
             try
             {
+                _logger.LogDebug("Opening debug config form.");
                 // 从依赖注入容器获取日志服务
                 var logger = new ConsoleLogger(true); // 临时解决方案
                 var debugConfigForm = new DebugConfigForm(logger);
@@ -386,6 +407,7 @@ namespace BooTools.UI
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to open debug config form.");
                 MessageBox.Show($"打开调试配置失败: {ex.Message}", "调试配置", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -402,4 +424,5 @@ namespace BooTools.UI
             MessageBox.Show(aboutInfo, "关于", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
-} 
+}
+ 
