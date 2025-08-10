@@ -5,6 +5,8 @@
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>BooTools.Plugins.EnvironmentVariableEditor</AssemblyName>
+    <RootNamespace>BooTools.Plugins.EnvironmentVariableEditor</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,8 +17,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <Compile Update="EnvironmentEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="VariableEditForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
   </ItemGroup>
 
-</Project> 
- 
+</Project>

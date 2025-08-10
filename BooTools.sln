@@ -2,11 +2,89 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BooTools.Core", "src\BooTools.Core\BooTools.Core.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{F1D6D8E3-4C2E-4A8D-9B9D-2C3E1A4F5B6C}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+		README_CN.md = README_CN.md
+		CHANGELOG.md = CHANGELOG.md
+		CHANGELOG_CN.md = CHANGELOG_CN.md
+		GEMINI.md = GEMINI.md
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BooTools.UI", "src\BooTools.UI\BooTools.UI.csproj", "{B2C3D4E5-F6G7-8901-BCDE-F23456789012}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IDE & Tooling", "IDE & Tooling", "{C0D1F1ED-C0DE-4A7E-B534-79A7A7A7A7A7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WallpaperSwitcher", "src\BooTools.Plugins\WallpaperSwitcher\WallpaperSwitcher.csproj", "{C3D4E5F6-G7H8-9012-CDEF-345678901234}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".claude", ".claude", "{C0D1F1ED-C0DE-4A7E-B534-500000000001}"
+	ProjectSection(SolutionItems) = preProject
+		.claude\settings.local.json = .claude\settings.local.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".cursor", ".cursor", "{C0D1F1ED-C0DE-4A7E-B534-300000000001}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rules", "rules", "{C0D1F1ED-C0DE-4A7E-B534-300000000002}"
+	ProjectSection(SolutionItems) = preProject
+		.cursor\rules\dev-rules.mdc = .cursor\rules\dev-rules.mdc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".gemini", ".gemini", "{C0D1F1ED-C0DE-4A7E-B534-400000000001}"
+	ProjectSection(SolutionItems) = preProject
+		.gemini\settings.json = .gemini\settings.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{C0D1F1ED-C0DE-4A7E-B534-100000000001}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{C0D1F1ED-C0DE-4A7E-B534-100000000002}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build-release.yml = .github\workflows\build-release.yml
+		.github\workflows\build.yml = .github\workflows\build.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".idea", ".idea", "{C0D1F1ED-C0DE-4A7E-B534-200000000001}"
+	ProjectSection(SolutionItems) = preProject
+		.idea\.gitignore = .idea\.gitignore
+		.idea\encodings.xml = .idea\encodings.xml
+		.idea\indexLayout.xml = .idea\indexLayout.xml
+		.idea\projectSettingsUpdater.xml = .idea\projectSettingsUpdater.xml
+		.idea\workspace.xml = .idea\workspace.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".idea.BooTools", ".idea.BooTools", "{C0D1F1ED-C0DE-4A7E-B534-200000000002}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".idea", ".idea", "{C0D1F1ED-C0DE-4A7E-B534-200000000003}"
+	ProjectSection(SolutionItems) = preProject
+		.idea\.idea.BooTools\.idea\.gitignore = .idea\.idea.BooTools\.idea\.gitignore
+		.idea\.idea.BooTools\.idea\.name = .idea\.idea.BooTools\.idea\.name
+		.idea\.idea.BooTools\.idea\encodings.xml = .idea\.idea.BooTools\.idea\encodings.xml
+		.idea\.idea.BooTools\.idea\indexLayout.xml = .idea\.idea.BooTools\.idea\indexLayout.xml
+		.idea\.idea.BooTools\.idea\projectSettingsUpdater.xml = .idea\.idea.BooTools\.idea\projectSettingsUpdater.xml
+		.idea\.idea.BooTools\.idea\UniappTool.xml = .idea\.idea.BooTools\.idea\UniappTool.xml
+		.idea\.idea.BooTools\.idea\vcs.xml = .idea\.idea.BooTools\.idea\vcs.xml
+		.idea\.idea.BooTools\.idea\workspace.xml = .idea\.idea.BooTools\.idea\workspace.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "inspectionProfiles", "inspectionProfiles", "{C0D1F1ED-C0DE-4A7E-B534-200000000004}"
+	ProjectSection(SolutionItems) = preProject
+		.idea\.idea.BooTools\.idea\inspectionProfiles\Project_Default.xml = .idea\.idea.BooTools\.idea\inspectionProfiles\Project_Default.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E93F7E0B-7AC7-4835-9320-57B0B467D38B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BooTools.Plugins.Tests", "tests\BooTools.Plugins.Tests\BooTools.Plugins.Tests.csproj", "{CF2EF2C4-204F-4F93-8A27-0E3F05E27466}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BooTools.UI.Tests", "tests\BooTools.UI.Tests\BooTools.UI.Tests.csproj", "{CC249064-E901-4A28-9C49-544E17AD03D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BooTools.Core.Tests", "tests\BooTools.Core.Tests\BooTools.Core.Tests.csproj", "{EB7052EB-4C6E-4CEC-8823-FD4920464630}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B47E53B7-5B94-4C13-81C9-51FF56AE977E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BooTools.Plugins", "BooTools.Plugins", "{53679178-28C5-4973-95C8-EA4D0BC8EC1B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnvironmentVariableEditor", "src\BooTools.Plugins\EnvironmentVariableEditor\EnvironmentVariableEditor.csproj", "{782710E4-A0CB-46D3-BB3D-D1F44142E4B3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WallpaperSwitcher", "src\BooTools.Plugins\WallpaperSwitcher\WallpaperSwitcher.csproj", "{650BD626-751A-45D8-B0FE-B0FCE5BFC9E7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BooTools.UI", "src\BooTools.UI\BooTools.UI.csproj", "{A2155814-2BC9-419A-9381-3F4373B7829D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BooTools.Core", "src\BooTools.Core\BooTools.Core.csproj", "{83A495D5-A92E-455E-B3AD-E9E3E5ADD308}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,20 +92,56 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B2C3D4E5-F6G7-8901-BCDE-F23456789012}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B2C3D4E5-F6G7-8901-BCDE-F23456789012}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B2C3D4E5-F6G7-8901-BCDE-F23456789012}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B2C3D4E5-F6G7-8901-BCDE-F23456789012}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C3D4E5F6-G7H8-9012-CDEF-345678901234}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C3D4E5F6-G7H8-9012-CDEF-345678901234}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C3D4E5F6-G7H8-9012-CDEF-345678901234}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C3D4E5F6-G7H8-9012-CDEF-345678901234}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF2EF2C4-204F-4F93-8A27-0E3F05E27466}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF2EF2C4-204F-4F93-8A27-0E3F05E27466}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF2EF2C4-204F-4F93-8A27-0E3F05E27466}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF2EF2C4-204F-4F93-8A27-0E3F05E27466}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC249064-E901-4A28-9C49-544E17AD03D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC249064-E901-4A28-9C49-544E17AD03D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC249064-E901-4A28-9C49-544E17AD03D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC249064-E901-4A28-9C49-544E17AD03D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB7052EB-4C6E-4CEC-8823-FD4920464630}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB7052EB-4C6E-4CEC-8823-FD4920464630}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB7052EB-4C6E-4CEC-8823-FD4920464630}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB7052EB-4C6E-4CEC-8823-FD4920464630}.Release|Any CPU.Build.0 = Release|Any CPU
+		{782710E4-A0CB-46D3-BB3D-D1F44142E4B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{782710E4-A0CB-46D3-BB3D-D1F44142E4B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{782710E4-A0CB-46D3-BB3D-D1F44142E4B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{782710E4-A0CB-46D3-BB3D-D1F44142E4B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{650BD626-751A-45D8-B0FE-B0FCE5BFC9E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{650BD626-751A-45D8-B0FE-B0FCE5BFC9E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{650BD626-751A-45D8-B0FE-B0FCE5BFC9E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{650BD626-751A-45D8-B0FE-B0FCE5BFC9E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2155814-2BC9-419A-9381-3F4373B7829D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2155814-2BC9-419A-9381-3F4373B7829D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2155814-2BC9-419A-9381-3F4373B7829D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2155814-2BC9-419A-9381-3F4373B7829D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83A495D5-A92E-455E-B3AD-E9E3E5ADD308}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83A495D5-A92E-455E-B3AD-E9E3E5ADD308}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83A495D5-A92E-455E-B3AD-E9E3E5ADD308}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83A495D5-A92E-455E-B3AD-E9E3E5ADD308}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-EndGlobal 
+	GlobalSection(NestedProjects) = preSolution
+		{CF2EF2C4-204F-4F93-8A27-0E3F05E27466} = {E93F7E0B-7AC7-4835-9320-57B0B467D38B}
+		{CC249064-E901-4A28-9C49-544E17AD03D4} = {E93F7E0B-7AC7-4835-9320-57B0B467D38B}
+		{EB7052EB-4C6E-4CEC-8823-FD4920464630} = {E93F7E0B-7AC7-4835-9320-57B0B467D38B}
+		{53679178-28C5-4973-95C8-EA4D0BC8EC1B} = {B47E53B7-5B94-4C13-81C9-51FF56AE977E}
+		{782710E4-A0CB-46D3-BB3D-D1F44142E4B3} = {53679178-28C5-4973-95C8-EA4D0BC8EC1B}
+		{650BD626-751A-45D8-B0FE-B0FCE5BFC9E7} = {53679178-28C5-4973-95C8-EA4D0BC8EC1B}
+		{A2155814-2BC9-419A-9381-3F4373B7829D} = {B47E53B7-5B94-4C13-81C9-51FF56AE977E}
+		{83A495D5-A92E-455E-B3AD-E9E3E5ADD308} = {B47E53B7-5B94-4C13-81C9-51FF56AE977E}
+		{C0D1F1ED-C0DE-4A7E-B534-500000000001} = {C0D1F1ED-C0DE-4A7E-B534-79A7A7A7A7A7}
+		{C0D1F1ED-C0DE-4A7E-B534-300000000001} = {C0D1F1ED-C0DE-4A7E-B534-79A7A7A7A7A7}
+		{C0D1F1ED-C0DE-4A7E-B534-300000000002} = {C0D1F1ED-C0DE-4A7E-B534-300000000001}
+		{C0D1F1ED-C0DE-4A7E-B534-400000000001} = {C0D1F1ED-C0DE-4A7E-B534-79A7A7A7A7A7}
+		{C0D1F1ED-C0DE-4A7E-B534-100000000001} = {C0D1F1ED-C0DE-4A7E-B534-79A7A7A7A7A7}
+		{C0D1F1ED-C0DE-4A7E-B534-100000000002} = {C0D1F1ED-C0DE-4A7E-B534-100000000001}
+		{C0D1F1ED-C0DE-4A7E-B534-200000000001} = {C0D1F1ED-C0DE-4A7E-B534-79A7A7A7A7A7}
+		{C0D1F1ED-C0DE-4A7E-B534-200000000002} = {C0D1F1ED-C0DE-4A7E-B534-200000000001}
+		{C0D1F1ED-C0DE-4A7E-B534-200000000003} = {C0D1F1ED-C0DE-4A7E-B534-200000000002}
+		{C0D1F1ED-C0DE-4A7E-B534-200000000004} = {C0D1F1ED-C0DE-4A7E-B534-200000000003}
+	EndGlobalSection
+EndGlobal

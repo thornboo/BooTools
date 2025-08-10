@@ -64,9 +64,9 @@ namespace BooTools.UI
         private void InitializeComponent()
         {
             this.Text = "插件商店 - Boo Tools";
-            this.Size = new Size(1000, 750);
+            this.Size = new Size(1500, 1125);
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.MinimumSize = new Size(900, 650);
+            this.MinimumSize = new Size(1350, 975);
             this.FormBorderStyle = FormBorderStyle.Sizable;
             
             // 创建选项卡控件

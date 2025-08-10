@@ -1,150 +1,157 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Logging;
 using BooTools.Core;
+using BooTools.Core.Interfaces;
 using BooTools.Core.Management;
-using BooToolsLogger = BooTools.Core.ILogger;
+using BooTools.Core.Repository.Management;
+using BooTools.Core.Download;
+using BooTools.Core.Package;
+using MsLogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace BooTools.UI
 {
     static class Program
     {
-        private static IPluginManager? _pluginManager;
-        private static BooToolsLogger? _logger;
-        private static IServiceProvider? _services;
-        
-        // 导入Windows API以支持DPI感知
+        // Import the AllocConsole function to show a console window in a WinForms app
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool AllocConsole();
+
+        private static IServiceProvider? _serviceProvider;
+
         [DllImport("user32.dll")]
         private static extern bool SetProcessDPIAware();
-        
+
         [STAThread]
         static void Main()
         {
-            // 启用高DPI支持
-            if (Environment.OSVersion.Version.Major >= 6)
-            {
-                SetProcessDPIAware();
-            }
-            
-            // 启用应用程序视觉样式和现代渲染
+            // High DPI and visual styles setup
+            if (Environment.OSVersion.Version.Major >= 6) SetProcessDPIAware();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            
-            // 设置高DPI模式 (.NET Core 3.0+)
+            try { Application.SetHighDpiMode(HighDpiMode.SystemAware); }
+            catch { /* Ignore if not supported */ }
+
+            IPluginManager? pluginManager = null;
+            MsLogger? logger = null;
+
             try
             {
-                Application.SetHighDpiMode(HighDpiMode.SystemAware);
-            }
-            catch
-            {
-                // 如果不支持，则忽略
-            }
-            
-            try
-            {
-                // 初始化日志系统
-                _logger = new ConsoleLogger(true); // 启用控制台输出
-                _logger.LogInfo("BooTools 程序启动");
-                
-                // 初始化依赖注入容器
                 var services = new ServiceCollection();
                 ConfigureServices(services);
-                _services = services.BuildServiceProvider();
-                
-                // 初始化配置
-                var configuration = new ConfigurationBuilder()
-                    .SetBasePath(Application.StartupPath)
-                    .AddJsonFile("appsettings.json", optional: true)
-                    .Build();
-                
-                // 初始化现代插件管理器
-                _pluginManager = new ModernPluginManager(
-                    _services, _logger, configuration, 
-                    Application.StartupPath, new Version(1, 0, 0));
-                
-                _logger.LogInfo("插件管理器初始化完成");
-                
-                // 异步初始化插件管理器
-                var initTask = _pluginManager.InitializeAsync();
+                _serviceProvider = services.BuildServiceProvider();
+
+                var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
+                logger = loggerFactory.CreateLogger("BooTools.UI");
+                pluginManager = _serviceProvider.GetRequiredService<IPluginManager>();
+
+                logger.LogInformation("BooTools starting up...");
+                logger.LogInformation("Plugin manager resolved. Initializing plugins...");
+
+                var initTask = pluginManager.InitializeAsync();
                 initTask.Wait();
-                
+
                 if (!initTask.Result.IsSuccess)
                 {
-                    throw new Exception($"插件管理器初始化失败: {initTask.Result.ErrorMessage}");
+                    throw new Exception($"Plugin manager failed to initialize: {initTask.Result.ErrorMessage}");
                 }
+
+                logger.LogInformation("Plugins loaded. Starting main form.");
                 
-                _logger.LogInfo("插件加载完成，启动主界面");
-                
-                // 启动主界面
-                Application.Run(new MainForm(_pluginManager, _services));
+                // Resolve MainForm from the service provider to get all dependencies injected
+                var mainForm = _serviceProvider.GetRequiredService<MainForm>();
+                Application.Run(mainForm);
             }
             catch (Exception ex)
             {
-                _logger?.LogError("程序启动失败", ex);
-                MessageBox.Show($"程序启动失败: {ex.Message}", "错误", 
+                logger?.LogError(ex, "Application startup failed.");
+                MessageBox.Show($"A critical error occurred: {ex.Message}", "Error", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
-                // 清理资源
-                _logger?.LogInfo("程序正在退出，清理资源...");
-                _pluginManager?.StopAllPluginsAsync().Wait(TimeSpan.FromSeconds(10));
-                _logger?.LogInfo("程序退出完成");
+                logger?.LogInformation("Application shutting down. Disposing resources...");
+                if (pluginManager is IDisposable disposableManager)
+                {
+                    disposableManager.Dispose();
+                }
                 
-                // 释放服务容器
-                (_services as IDisposable)?.Dispose();
+                if (_serviceProvider is IDisposable disposableProvider)
+                {
+                    disposableProvider.Dispose();
+                }
+                logger?.LogInformation("Shutdown complete.");
             }
         }
-        
-        /// <summary>
-        /// 配置依赖注入服务
-        /// </summary>
-        /// <param name="services">服务集合</param>
+
         private static void ConfigureServices(IServiceCollection services)
         {
-            // 注册日志服务
-            services.AddSingleton<BooToolsLogger>(provider => _logger ?? new ConsoleLogger());
-            
-            // 注册配置服务
-            services.AddSingleton<IConfiguration>(provider =>
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Application.StartupPath)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .Build();
+
+            services.AddSingleton<IConfiguration>(configuration);
+
+            services.AddLogging(configure =>
             {
-                return new ConfigurationBuilder()
-                    .SetBasePath(Application.StartupPath)
-                    .AddJsonFile("appsettings.json", optional: true)
-                    .Build();
+                configure.ClearProviders(); 
+                configure.AddConfiguration(configuration.GetSection("Logging"));
+                configure.AddConsole();
+                configure.SetMinimumLevel(LogLevel.Debug); 
+                
+                // Add our custom in-memory logger provider
+                configure.AddProvider(new InMemoryLoggerProvider());
             });
-            
-            // 注册HTTP客户端
+
             services.AddHttpClient();
-            
-            // 注册远程插件管理服务
-            services.AddSingleton<BooTools.Core.Repository.Management.PluginRepositoryManager>(provider =>
+
+            // Register the adapter for any legacy component that needs the old ILogger
+            services.AddSingleton<BooTools.Core.ILogger>(provider => {
+                var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+                // Create a logger with a generic category for the adapter
+                return new LoggerAdapter(loggerFactory.CreateLogger("Adapter"));
+            });
+
+            services.AddSingleton<IPluginManager>(provider =>
             {
-                var logger = provider.GetRequiredService<BooToolsLogger>();
+                var logger = provider.GetRequiredService<ILogger<ModernPluginManager>>();
+                var config = provider.GetRequiredService<IConfiguration>();
+                var hostVersion = new Version(1, 0, 0);
+                
+                return new ModernPluginManager(provider, logger, config, Application.StartupPath, hostVersion);
+            });
+            
+            services.AddSingleton<PluginRepositoryManager>(provider =>
+            {
+                var logger = provider.GetRequiredService<BooTools.Core.ILogger>();
                 var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
-                var httpClient = httpClientFactory.CreateClient();
                 var configDirectory = Path.Combine(Application.StartupPath, "Config");
-                return new BooTools.Core.Repository.Management.PluginRepositoryManager(logger, httpClient, configDirectory);
+                return new PluginRepositoryManager(logger, httpClientFactory.CreateClient(), configDirectory);
             });
             
-            services.AddSingleton<BooTools.Core.Download.PluginDownloadManager>(provider =>
+            services.AddSingleton<PluginDownloadManager>(provider =>
             {
-                var logger = provider.GetRequiredService<BooToolsLogger>();
+                var logger = provider.GetRequiredService<BooTools.Core.ILogger>();
                 var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
-                var httpClient = httpClientFactory.CreateClient();
                 var downloadDirectory = Path.Combine(Application.StartupPath, "Downloads");
-                return new BooTools.Core.Download.PluginDownloadManager(logger, httpClient, downloadDirectory);
+                return new PluginDownloadManager(logger, httpClientFactory.CreateClient(), downloadDirectory);
             });
             
-            services.AddSingleton<BooTools.Core.Package.PluginPackageManager>(provider =>
+            services.AddSingleton<PluginPackageManager>(provider =>
             {
-                var logger = provider.GetRequiredService<BooToolsLogger>();
-                return new BooTools.Core.Package.PluginPackageManager(logger);
+                var logger = provider.GetRequiredService<BooTools.Core.ILogger>();
+                return new PluginPackageManager(logger);
             });
+
+            // Register the MainForm for dependency injection
+            services.AddTransient<MainForm>();
         }
     }
-} 
+}
